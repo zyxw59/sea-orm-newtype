@@ -170,7 +170,7 @@ fn try_getable_for_newtype(
 
     let try_get_block = match convert_type {
         FromInto(base_type_name) => {
-            quote! { Ok(Into::<Self>::into(res.try_get_by::<#base_type_name, I>(index)?)) }
+            quote! { Ok(Into::<Self>::into(<#base_type_name as ::sea_orm_newtype::TryGetable>::try_get_by(res, index)?)) }
         }
         TryFromInto(base_type_name) => {
             // アサーションを追加しておく(エラーはstd::error::Errorを実装する)
@@ -186,13 +186,13 @@ fn try_getable_for_newtype(
 
             quote! {
                 Ok(
-                    TryInto::<Self>::try_into(res.try_get_by::<#base_type_name, I>(index)?)
+                    TryInto::<Self>::try_into(<#base_type_name as ::sea_orm_newtype::TryGetable>::try_get_by(res, index)?)
                         .map_err(|e| ::sea_orm_newtype::sea_orm::DbErr::Custom(e.to_string()))?,
                 )
             }
         }
         Transparent(base_type_name) => {
-            quote! { Ok(#new_type_name (res.try_get_by::<#base_type_name, I>(index)?)) }
+            quote! { Ok(#new_type_name (<#base_type_name as ::sea_orm_newtype::TryGetable>::try_get_by(res, index)?)) }
         }
     };
 
